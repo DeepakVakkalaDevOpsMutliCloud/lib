@@ -1,0 +1,46 @@
+apiVersion : apps/v1
+kind : ReplicaSet
+metadata :
+  name : books-rs
+  labels :
+    rs : books-rs
+spec : 
+  replicas : 1
+  selector : 
+    matchLabels :
+      db : books
+  template : 
+    metadata : 
+      labels :
+        db : books
+    spec : 
+      containers : 
+        - name : booksdbcon
+          image : postgres:15-alpine 
+          ports : 
+            - containerPort : 5432
+              protocol : TCP
+          envFrom : 
+            - configMapRef : 
+                name : booksdb-config
+          resources : 
+            limits : 
+              cpu : 128m
+              memory : 256M 
+            requests : 
+              cpu : 128m
+              memory : 256M
+---
+apiVersion : v1
+kind : Service
+metadata : 
+  name : books-svc
+  labels :
+    svc : books-svc
+spec :
+  type : ClusterIP
+  selector : 
+    rs : books-rs
+  ports : 
+    - port : 50
+      targetPort : 5432
